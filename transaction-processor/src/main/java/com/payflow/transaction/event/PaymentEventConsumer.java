@@ -21,5 +21,6 @@ public class PaymentEventConsumer {
         System.out.println("Received Payment Created Event!");
 
         transactionService.createTransaction(event);
+        transactionService.processTransaction(event.paymentId());
     }
 }
