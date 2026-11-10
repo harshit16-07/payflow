@@ -14,12 +14,12 @@ public class PaymentEventProducer {
         this.rabbitTemplate=rabbitTemplate;
     }
 
-    public void publishPaymentCreatedEvent(PaymentCreatedEvent event)
+    public void publishPaymentCreatedEvent(String payload)
     {
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.EXCHANGE,
                 RabbitMQConfig.ROUTING_KEY,
-                event
+                payload
         );
     }
 

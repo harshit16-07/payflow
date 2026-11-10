@@ -15,6 +15,17 @@ public class Payment {
     @Column(unique = true, nullable = false)
     private String paymentReference;
 
+    @Column(unique = true, nullable = false)
+    private String idempotencyKey;
+
+    public String getIdempotencyKey() {
+        return idempotencyKey;
+    }
+
+    public void setIdempotencyKey(String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
+    }
+
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 

@@ -21,10 +21,11 @@ public class PaymentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Payment createPayment( @Valid  @RequestBody CreatePaymentRequest createPaymentRequest) {
+    public Payment createPayment( @RequestHeader("Idempotency-Key") String idempotencyKey ,@Valid  @RequestBody CreatePaymentRequest createPaymentRequest) {
         Payment payment= new Payment();
         payment.setAmount(createPaymentRequest.amount());
         payment.setCurrency(createPaymentRequest.currency());
+        payment.setIdempotencyKey(idempotencyKey);
         return paymentService.createPayment(payment);
     }
 
