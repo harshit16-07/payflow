@@ -29,15 +29,19 @@ public class TransactionService {
         this.transactionStatusService = transactionStatusService;
     }
 
+
     @Transactional
-    public void createTransaction(PaymentCreatedEvent event) {
+    public boolean createTransaction(PaymentCreatedEvent event) {
 
         // Check whether transaction already exists
         if (transactionRepository.findByPaymentId(event.paymentId()).isPresent()) {
+
             System.out.println(
                     "Transaction already exists for payment: " + event.paymentId()
             );
-            return;
+
+            // Return false because this is a duplicate event
+            return false;
         }
 
         // Create a new transaction
@@ -56,25 +60,34 @@ public class TransactionService {
         System.out.println(
                 "Transaction created successfully for payment: " + event.paymentId()
         );
+
+        // Return true because a new transaction was created
+        return true;
     }
+
+
 
     public void processTransaction(Long paymentId) {
 
-        Transaction transaction = transactionRepository
-                .findByPaymentId(paymentId)
+        // 1. Check whether the transaction exists
+        transactionRepository.findByPaymentId(paymentId)
                 .orElseThrow(() ->
                         new RuntimeException("Transaction not found: " + paymentId));
 
-        if (transaction.getStatus() != TransactionStatus.INITIATED) {
-            System.out.println("Transaction cannot be processed: " + paymentId);
+        // 2. Atomically claim the transaction for processing
+        boolean claimed = transactionStatusService
+                .markAsProcessingIfInitiated(paymentId);
+
+        if (!claimed) {
+            System.out.println(
+                    "Transaction already claimed or processed: " + paymentId
+            );
             return;
         }
 
-        // 1. Commit PROCESSING status
-        transactionStatusService.updateStatus(
-                paymentId, TransactionStatus.PROCESSING);
+        System.out.println("Transaction moved to PROCESSING: " + paymentId);
 
-        // 2. Process payment with retries
+        // 3. Process payment with retries
         int attempts = 0;
         boolean paymentSuccessful = false;
 
@@ -105,7 +118,7 @@ public class TransactionService {
                     return;
                 }
 
-                // Exponential backoff
+                // Exponential backoff: 1 second, then 2 seconds
                 long delay = INITIAL_DELAY_MS * (1L << (attempts - 1));
 
                 try {
@@ -124,7 +137,7 @@ public class TransactionService {
             }
         }
 
-        // 3. Update final transaction status
+        // 4. Update final transaction status
         if (paymentSuccessful) {
 
             transactionStatusService.updateStatus(
@@ -140,4 +153,5 @@ public class TransactionService {
             System.out.println("Payment failed: " + paymentId);
         }
     }
+
 }

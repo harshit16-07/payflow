@@ -20,7 +20,15 @@ public class PaymentEventConsumer {
 
         System.out.println("Received Payment Created Event!");
 
-        transactionService.createTransaction(event);
+        boolean created = transactionService.createTransaction(event);
+
+        if (!created) {
+            System.out.println(
+                    "Transaction already exists for payment: " + event.paymentId()
+            );
+        }
+
+        // Process new or previously created INITIATED transactions
         transactionService.processTransaction(event.paymentId());
     }
 }

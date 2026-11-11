@@ -10,12 +10,14 @@
         <module name="payment-service" />
         <module name="service-registry" />
         <module name="transaction-processor" />
+        <module name="ledger-service" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="api-gateway" options="-parameters" />
+      <module name="ledger-service" options="-parameters" />
       <module name="payment-service" options="-parameters" />
       <module name="service-registry" options="-parameters" />
       <module name="transaction-processor" options="-parameters" />

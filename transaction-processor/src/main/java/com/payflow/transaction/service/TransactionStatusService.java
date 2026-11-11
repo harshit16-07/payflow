@@ -16,6 +16,18 @@ public class TransactionStatusService {
     }
 
     @Transactional
+    public boolean markAsProcessingIfInitiated(Long paymentId) {
+
+        int updatedRows = transactionRepository.updateStatusIfCurrent(
+                paymentId,
+                TransactionStatus.INITIATED,
+                TransactionStatus.PROCESSING
+        );
+
+        return updatedRows == 1;
+    }
+
+    @Transactional
     public void updateStatus(Long paymentId, TransactionStatus status) {
 
         Transaction transaction = transactionRepository
