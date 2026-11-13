@@ -6,7 +6,15 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "ledger_entries")
+@Table(
+        name = "ledger_entries",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_payment_entry_type",
+                        columnNames = {"payment_id", "entry_type"}
+                )
+        }
+)
 public class LedgerEntry {
 
     @Id
